@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+</head>
+<body>
+
+<h2>Admin Panel</h2>
+
+{% for complaint in complaints %}
+
+    <p><strong>Name:</strong> {{ complaint.name }}</p>
+    <p><strong>Complaint:</strong> {{ complaint.message }}</p>
+
+    <!-- Update Status -->
+    <form action="/update_status/{{ complaint.id }}" method="POST">
+        <select name="status">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+        </select>
+        <button type="submit">Update Status</button>
+    </form>
+
+    <p><strong>Current Status:</strong> {{ complaint.status }}</p>
+
+    <!-- Admin Reply -->
+    <form action="/reply/{{ complaint.id }}" method="POST">
+        <textarea name="reply" placeholder="Write reply..." required></textarea>
+        <button type="submit">Send Reply</button>
+    </form>
+
+    {% if complaint.admin_reply %}
+        <p><strong>Reply Sent:</strong> {{ complaint.admin_reply }}</p>
+    {% endif %}
+
+    <hr>
+
+{% endfor %}
+
+<a href="/">Back to Student Page</a>
+
+</body>
+</html>
