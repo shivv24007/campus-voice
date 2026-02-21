@@ -1,71 +1,98 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///complaints.db'
+app.secret_key = "secretkey"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# =========================
-# DATABASE MODEL
-# =========================
-class Complaint(db.Model):
+# ---------------- MODELS ----------------
+
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    message = db.Column(db.Text)
+    email = db.Column(db.String(100))
+    password = db.Column(db.String(100))
+
+class Complaint(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_name = db.Column(db.String(100))
+    complaint_text = db.Column(db.String(500))
     status = db.Column(db.String(50), default="Pending")
-    admin_reply = db.Column(db.Text)   # NEW COLUMN
 
-# Create database
-with app.app_context():
-    db.create_all()
 
-# =========================
-# STUDENT PAGE
-# =========================
-@app.route("/", methods=["GET", "POST"])
-def index():
+# ---------------- ROUTES ----------------
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+@app.route("/register", methods=["GET","POST"])
+def register():
     if request.method == "POST":
-        name = request.form.get("name")
-        message = request.form.get("message")
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
 
-        new_complaint = Complaint(name=name, message=message)
+        new_user = User(name=name,email=email,password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect("/login")
+
+    return render_template("register.html")
+
+
+@app.route("/login", methods=["GET","POST"])
+def login():
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
+
+        user = User.query.filter_by(email=email,password=password).first()
+
+        if user:
+            session['user'] = user.name
+            return redirect("/dashboard")
+
+    return render_template("login.html")
+
+
+@app.route("/dashboard", methods=["GET","POST"])
+def dashboard():
+    if 'user' not in session:
+        return redirect("/login")
+
+    if request.method == "POST":
+        complaint = request.form['complaint']
+
+        new_complaint = Complaint(
+            student_name=session['user'],
+            complaint_text=complaint
+        )
+
         db.session.add(new_complaint)
         db.session.commit()
 
-        return redirect("/")
-
     complaints = Complaint.query.all()
-    return render_template("index.html", complaints=complaints)
 
-# =========================
-# ADMIN PANEL
-# =========================
-@app.route("/admin")
-def admin():
-    complaints = Complaint.query.all()
-    return render_template("admin.html", complaints=complaints)
+    return render_template("dashboard.html",complaints=complaints)
 
-# =========================
-# UPDATE STATUS
-# =========================
-@app.route("/update_status/<int:id>", methods=["POST"])
-def update_status(id):
-    complaint = Complaint.query.get(id)
-    complaint.status = request.form.get("status")
-    db.session.commit()
-    return redirect("/admin")
 
-# =========================
-# ADMIN REPLY
-# =========================
-@app.route("/reply/<int:id>", methods=["POST"])
-def reply(id):
-    complaint = Complaint.query.get(id)
-    complaint.admin_reply = request.form.get("reply")
-    db.session.commit()
-    return redirect("/admin")
+@app.route("/logout")
+def logout():
+    session.pop('user',None)
+    return redirect("/")
+
+
+# ---------------- RUN ----------------
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+
     app.run(debug=True)
