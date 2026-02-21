@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Complaint System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Campus Voice</title>
 </head>
 <body>
 
-<header>
-    <h1>Student Complaint Management</h1>
-    <p>Submit & Track Complaints Easily</p>
-</header>
+<h2>Submit Complaint</h2>
 
-<section>
-    <h2>Welcome</h2>
-    <p>This platform allows students to register complaints and track their resolution status.</p>
+<form method="POST">
+    <input type="text" name="name" placeholder="Your Name" required><br><br>
+    <textarea name="message" placeholder="Your Complaint" required></textarea><br><br>
+    <button type="submit">Submit</button>
+</form>
 
-    <br>
-    <a href="/register"><button>Student Register</button></a>
-    <a href="/login"><button>Student Login</button></a>
-    <a href="/admin"><button>Admin Login</button></a>
-</section>
+<hr>
 
-<footer>
-    &copy; 2026 Student Complaint System
-</footer>
+<h2>All Complaints</h2>
+
+{% for complaint in complaints %}
+    <p><strong>Name:</strong> {{ complaint.name }}</p>
+    <p><strong>Complaint:</strong> {{ complaint.message }}</p>
+    <p><strong>Status:</strong> {{ complaint.status }}</p>
+
+    {% if complaint.admin_reply %}
+        <p><strong>Admin Reply:</strong> {{ complaint.admin_reply }}</p>
+    {% endif %}
+
+    <hr>
+{% endfor %}
+
+<a href="/admin">Go to Admin Panel</a>
 
 </body>
 </html>
