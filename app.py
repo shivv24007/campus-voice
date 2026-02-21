@@ -1,160 +1,71 @@
-from flask import Flask, render_template, request, redirect, session
-import sqlite3
+from flask import Flask, render_template, request, redirect
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///complaints.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# ---------------- DATABASE ----------------
+db = SQLAlchemy(app)
 
-def init_db():
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
+# =========================
+# DATABASE MODEL
+# =========================
+class Complaint(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    message = db.Column(db.Text)
+    status = db.Column(db.String(50), default="Pending")
+    admin_reply = db.Column(db.Text)   # NEW COLUMN
 
-    # Students Table
-    c.execute('''CREATE TABLE IF NOT EXISTS students (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT,
-                    email TEXT,
-                    password TEXT
-                )''')
+# Create database
+with app.app_context():
+    db.create_all()
 
-    # Complaints Table
-    c.execute('''CREATE TABLE IF NOT EXISTS complaints (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    student_id INTEGER,
-                    complaint TEXT,
-                    status TEXT DEFAULT 'Pending'
-                )''')
-
-    conn.commit()
-    conn.close()
-
-init_db()
-
-# ---------------- ROUTES ----------------
-
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-# -------- Student Register --------
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
+# =========================
+# STUDENT PAGE
+# =========================
+@app.route("/", methods=["GET", "POST"])
+def index():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
+        name = request.form.get("name")
+        message = request.form.get("message")
 
-        conn = sqlite3.connect("database.db")
-        c = conn.cursor()
-        c.execute("INSERT INTO students (name,email,password) VALUES (?,?,?)",
-                  (name, email, password))
-        conn.commit()
-        conn.close()
+        new_complaint = Complaint(name=name, message=message)
+        db.session.add(new_complaint)
+        db.session.commit()
 
-        return redirect("/login")
+        return redirect("/")
 
-    return render_template("register.html")
+    complaints = Complaint.query.all()
+    return render_template("index.html", complaints=complaints)
 
-# -------- Student Login --------
+# =========================
+# ADMIN PANEL
+# =========================
+@app.route("/admin")
+def admin():
+    complaints = Complaint.query.all()
+    return render_template("admin.html", complaints=complaints)
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+# =========================
+# UPDATE STATUS
+# =========================
+@app.route("/update_status/<int:id>", methods=["POST"])
+def update_status(id):
+    complaint = Complaint.query.get(id)
+    complaint.status = request.form.get("status")
+    db.session.commit()
+    return redirect("/admin")
 
-        conn = sqlite3.connect("database.db")
-        c = conn.cursor()
-        c.execute("SELECT * FROM students WHERE email=? AND password=?",
-                  (email, password))
-        user = c.fetchone()
-        conn.close()
-
-        if user:
-            session["student_id"] = user[0]
-            return redirect("/dashboard")
-        else:
-            return "Invalid Credentials"
-
-    return render_template("login.html")
-
-# -------- Student Dashboard --------
-
-@app.route("/dashboard", methods=["GET", "POST"])
-def dashboard():
-    if "student_id" not in session:
-        return redirect("/login")
-
-    student_id = session["student_id"]
-
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-
-    if request.method == "POST":
-        complaint = request.form["complaint"]
-        c.execute("INSERT INTO complaints (student_id, complaint) VALUES (?,?)",
-                  (student_id, complaint))
-        conn.commit()
-
-    c.execute("SELECT * FROM complaints WHERE student_id=?",
-              (student_id,))
-    complaints = c.fetchall()
-
-    conn.close()
-
-    return render_template("dashboard.html", complaints=complaints)
-
-# -------- Admin Login --------
-
-@app.route("/admin", methods=["GET", "POST"])
-def admin_login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
-        # Hardcoded admin
-        if username == "admin" and password == "admin123":
-            session["admin"] = True
-            return redirect("/admin_dashboard")
-        else:
-            return "Invalid Admin Credentials"
-
-    return render_template("admin_login.html")
-
-# -------- Admin Dashboard --------
-
-@app.route("/admin_dashboard", methods=["GET", "POST"])
-def admin_dashboard():
-    if "admin" not in session:
-        return redirect("/admin")
-
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-
-    if request.method == "POST":
-        complaint_id = request.form["complaint_id"]
-        status = request.form["status"]
-        c.execute("UPDATE complaints SET status=? WHERE id=?",
-                  (status, complaint_id))
-        conn.commit()
-
-    c.execute("""SELECT complaints.id, students.name, complaints.complaint, complaints.status
-                 FROM complaints
-                 JOIN students ON complaints.student_id = students.id""")
-    all_complaints = c.fetchall()
-
-    conn.close()
-
-    return render_template("admin_dashboard.html", complaints=all_complaints)
-
-# -------- Logout --------
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+# =========================
+# ADMIN REPLY
+# =========================
+@app.route("/reply/<int:id>", methods=["POST"])
+def reply(id):
+    complaint = Complaint.query.get(id)
+    complaint.admin_reply = request.form.get("reply")
+    db.session.commit()
+    return redirect("/admin")
 
 if __name__ == "__main__":
     app.run(debug=True)
