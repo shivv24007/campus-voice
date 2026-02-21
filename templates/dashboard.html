@@ -1,47 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+<h2>Student Dashboard</h2>
 
-<header>
-    <h1>Student Dashboard</h1>
-</header>
+<a href="/logout">Logout</a>
 
-<section>
-    <h2>Submit Complaint</h2>
+<h3>Submit Complaint</h3>
 
-    <form method="post">
-        <textarea name="complaint" rows="4" placeholder="Enter your complaint..." required></textarea>
-        <input type="submit" value="Submit Complaint">
-    </form>
+<form method="POST">
 
-    <h2>Your Complaints</h2>
+<textarea name="complaint" required></textarea>
+<br><br>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Complaint</th>
-            <th>Status</th>
-        </tr>
-        {% for c in complaints %}
-        <tr>
-            <td>{{ c[0] }}</td>
-            <td>{{ c[2] }}</td>
-            <td>{{ c[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<button type="submit">Submit Complaint</button>
 
-    <br>
-    <a href="/logout"><button>Logout</button></a>
-</section>
+</form>
 
-<footer>
-    &copy; 2026 Student Complaint System
-</footer>
 
-</body>
-</html>
+<h3>All Complaints</h3>
+
+<table border="1">
+
+<tr>
+<th>Student</th>
+<th>Complaint</th>
+<th>Status</th>
+</tr>
+
+{% for complaint in complaints %}
+
+<tr>
+<td>{{complaint.student_name}}</td>
+<td>{{complaint.complaint_text}}</td>
+<td>{{complaint.status}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
