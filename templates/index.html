@@ -1,35 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Campus Voice</title>
+<title>Campus Voice</title>
 </head>
+
 <body>
 
-<h2>Submit Complaint</h2>
+<h1>Campus Voice - Student Complaint System</h1>
 
-<form method="POST">
-    <input type="text" name="name" placeholder="Your Name" required><br><br>
-    <textarea name="message" placeholder="Your Complaint" required></textarea><br><br>
-    <button type="submit">Submit</button>
-</form>
-
-<hr>
-
-<h2>All Complaints</h2>
-
-{% for complaint in complaints %}
-    <p><strong>Name:</strong> {{ complaint.name }}</p>
-    <p><strong>Complaint:</strong> {{ complaint.message }}</p>
-    <p><strong>Status:</strong> {{ complaint.status }}</p>
-
-    {% if complaint.admin_reply %}
-        <p><strong>Admin Reply:</strong> {{ complaint.admin_reply }}</p>
-    {% endif %}
-
-    <hr>
-{% endfor %}
-
-<a href="/admin">Go to Admin Panel</a>
+<a href="/login">Login</a>
+<br><br>
+<a href="/register">Register</a>
 
 </body>
 </html>
