@@ -1,58 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
+
 <body>
 
-<header>
-    <h1>Admin Dashboard</h1>
-</header>
+<h1>Admin Dashboard</h1>
 
-<section>
+<table border="1">
 
-    <h2>All Complaints</h2>
+<tr>
+<th>ID</th>
+<th>Student</th>
+<th>Complaint</th>
+<th>Status</th>
+</tr>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Student Name</th>
-            <th>Complaint</th>
-            <th>Status</th>
-            <th>Update</th>
-        </tr>
+{% for c in complaints %}
 
-        {% for c in complaints %}
-        <tr>
-            <td>{{ c[0] }}</td>
-            <td>{{ c[1] }}</td>
-            <td>{{ c[2] }}</td>
-            <td>{{ c[3] }}</td>
-            <td>
-                <form method="post">
-                    <input type="hidden" name="complaint_id" value="{{ c[0] }}">
-                    <select name="status">
-                        <option>Pending</option>
-                        <option>In Progress</option>
-                        <option>Resolved</option>
-                    </select>
-                    <input type="submit" value="Update">
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+<tr>
+<td>{{ c.id }}</td>
+<td>{{ c.student }}</td>
+<td>{{ c.text }}</td>
+<td>{{ c.status }}</td>
+</tr>
 
-    </table>
+{% endfor %}
 
-    <br>
-    <a href="/logout"><button>Logout</button></a>
-
-</section>
-
-<footer>
-    &copy; 2026 Student Complaint System
-</footer>
+</table>
 
 </body>
 </html>
