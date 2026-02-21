@@ -1,35 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+<h2>Login</h2>
 
-<header>
-    <h1>Student Login</h1>
-</header>
+<form method="POST">
 
-<section>
-    <h2>Welcome Back</h2>
+Email<br>
+<input type="email" name="email" required><br><br>
 
-    <form method="post">
-        <label>Email</label>
-        <input type="email" name="email" required>
+Password<br>
+<input type="password" name="password" required><br><br>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+<button type="submit">Login</button>
 
-        <input type="submit" value="Login">
-    </form>
+</form>
 
-    <br>
-    <a href="/register"><button>Create New Account</button></a>
-</section>
-
-<footer>
-    &copy; 2026 Student Complaint System
-</footer>
-
-</body>
-</html>
+<a href="/register">Create account</a>
