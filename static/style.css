@@ -1,70 +1,26 @@
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background-color: #f7f1ea;
-  color: #5b342a;
-  margin: 0;
-  padding: 0;
+body{
+font-family: Arial;
+background:#f4f6f9;
+text-align:center;
 }
 
-header {
-  background-color: #8b4d36;
-  color: #f7f1ea;
-  padding: 30px 0;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(182,139,121,0.3);
+h1{
+color:#333;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 2.5em;
+button{
+background:#007bff;
+color:white;
+border:none;
+padding:10px 20px;
+border-radius:5px;
 }
 
-section {
-  max-width: 700px;
-  margin: 40px auto;
-  background-color: #fefaf5;
-  border-radius: 12px;
-  box-shadow: 0 0 18px rgba(191,176,154,0.3);
-  padding: 30px;
+table{
+margin:auto;
+border-collapse:collapse;
 }
 
-button, input[type="submit"] {
-  background-color: black;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover, input[type="submit"]:hover {
-  background-color: #333;
-}
-
-input, textarea, select {
-  width: 100%;
-  padding: 8px;
-  margin: 8px 0 15px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table, th, td {
-  border: 1px solid #d2b4a2;
-  padding: 8px;
-  text-align: center;
-}
-
-footer {
-  background-color: #8b4d36;
-  color: #f7f1ea;
-  text-align: center;
-  padding: 15px;
-  margin-top: 40px;
+td,th{
+padding:10px;
 }
