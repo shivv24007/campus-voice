@@ -7,19 +7,15 @@
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
-        
-        <!-- Logo -->
+    <div class="header-container">
         <img src="{{ url_for('static', filename='logo.png') }}" 
              alt="Campus Voice Logo" 
-             style="height:80px; border-radius:12px;">
+             class="logo">
 
-        <!-- Title -->
         <div>
-            <h1 style="margin:0;">Campus Voice</h1>
-            <p style="margin:5px 0 0 0;">Student Dashboard</p>
+            <h1>Campus Voice</h1>
+            <p>Student Dashboard</p>
         </div>
-
     </div>
 </header>
 
@@ -27,19 +23,30 @@
 
     <h2>Submit Complaint</h2>
 
-    <form method="post">
-        <textarea name="complaint" rows="4" placeholder="Enter your complaint..." required></textarea>
+    <form method="post" enctype="multipart/form-data">
+        <textarea name="complaint" rows="4" 
+                  placeholder="Enter your complaint..." required></textarea>
+
+        <label>Upload Image (Optional)</label>
+        <input type="file" name="image">
+
         <input type="submit" value="Submit Complaint">
     </form>
 
     <h2>Your Complaints</h2>
 
     {% for c in complaints %}
-        <div style="border:1px solid #ccc; padding:15px; margin-bottom:20px; border-radius:10px;">
+        <div class="complaint-card">
 
             <p><strong>Complaint ID:</strong> {{ c[0] }}</p>
             <p><strong>Complaint:</strong> {{ c[2] }}</p>
-            <p><strong>Status:</strong> {{ c[3] }}</p>
+
+            {% if c[3] %}
+                <img src="{{ url_for('static', filename='uploads/' + c[3]) }}"
+                     style="max-width:250px; border-radius:10px; margin-top:10px;">
+            {% endif %}
+
+            <p><strong>Status:</strong> {{ c[4] }}</p>
 
             <hr>
 
@@ -51,10 +58,11 @@
                 </p>
             {% endfor %}
 
-            {% if c[3] != "Resolved" %}
+            {% if c[4] != "Resolved" %}
                 <form method="post" action="/student_reply">
                     <input type="hidden" name="complaint_id" value="{{ c[0] }}">
-                    <textarea name="message" placeholder="Reply to admin..." required></textarea>
+                    <textarea name="message" 
+                              placeholder="Reply to admin..." required></textarea>
                     <input type="submit" value="Send Reply">
                 </form>
             {% else %}
