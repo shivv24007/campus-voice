@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = "secret123"
+
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # ---------------- DATABASE ----------------
 
@@ -18,15 +22,16 @@ def init_db():
                     password TEXT
                 )''')
 
-    # Complaints Table
+    # Complaints Table (WITH IMAGE COLUMN)
     c.execute('''CREATE TABLE IF NOT EXISTS complaints (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     student_id INTEGER,
                     complaint TEXT,
+                    image TEXT,
                     status TEXT DEFAULT 'Pending'
                 )''')
 
-    # Messages Table (NEW)
+    # Messages Table
     c.execute('''CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     complaint_id INTEGER,
@@ -102,19 +107,26 @@ def dashboard():
 
     if request.method == "POST":
         complaint = request.form["complaint"]
-        c.execute("INSERT INTO complaints (student_id, complaint) VALUES (?,?)",
-                  (student_id, complaint))
+        image = request.files.get("image")
+
+        image_filename = None
+
+        if image and image.filename != "":
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            image_filename = filename
+
+        c.execute("INSERT INTO complaints (student_id, complaint, image) VALUES (?,?,?)",
+                  (student_id, complaint, image_filename))
         conn.commit()
 
-    c.execute("SELECT * FROM complaints WHERE student_id=?",
-              (student_id,))
+    c.execute("SELECT * FROM complaints WHERE student_id=?", (student_id,))
     complaints = c.fetchall()
 
-    # Fetch messages for each complaint
+    # Fetch messages
     messages = {}
     for comp in complaints:
-        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?",
-                  (comp[0],))
+        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?", (comp[0],))
         messages[comp[0]] = c.fetchall()
 
     conn.close()
@@ -175,16 +187,15 @@ def admin_dashboard():
                   (status, complaint_id))
         conn.commit()
 
-    c.execute("""SELECT complaints.id, students.name, complaints.complaint, complaints.status
+    c.execute("""SELECT complaints.id, students.name, complaints.complaint,
+                 complaints.image, complaints.status
                  FROM complaints
                  JOIN students ON complaints.student_id = students.id""")
     all_complaints = c.fetchall()
 
-    # Fetch messages
     messages = {}
     for comp in all_complaints:
-        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?",
-                  (comp[0],))
+        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?", (comp[0],))
         messages[comp[0]] = c.fetchall()
 
     conn.close()
