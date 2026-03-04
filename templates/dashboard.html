@@ -7,8 +7,20 @@
 <body>
 
 <header>
-    <h1>Campus Voice</h1>
-    <p>Student Dashboard</p>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
+        
+        <!-- Logo -->
+        <img src="{{ url_for('static', filename='logo.png') }}" 
+             alt="Campus Voice Logo" 
+             style="height:80px; border-radius:12px;">
+
+        <!-- Title -->
+        <div>
+            <h1 style="margin:0;">Campus Voice</h1>
+            <p style="margin:5px 0 0 0;">Student Dashboard</p>
+        </div>
+
+    </div>
 </header>
 
 <section>
