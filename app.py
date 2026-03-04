@@ -26,6 +26,14 @@ def init_db():
                     status TEXT DEFAULT 'Pending'
                 )''')
 
+    # Messages Table (NEW)
+    c.execute('''CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    complaint_id INTEGER,
+                    sender TEXT,
+                    message TEXT
+                )''')
+
     conn.commit()
     conn.close()
 
@@ -102,9 +110,37 @@ def dashboard():
               (student_id,))
     complaints = c.fetchall()
 
+    # Fetch messages for each complaint
+    messages = {}
+    for comp in complaints:
+        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?",
+                  (comp[0],))
+        messages[comp[0]] = c.fetchall()
+
     conn.close()
 
-    return render_template("dashboard.html", complaints=complaints)
+    return render_template("dashboard.html",
+                           complaints=complaints,
+                           messages=messages)
+
+# -------- Student Reply --------
+
+@app.route("/student_reply", methods=["POST"])
+def student_reply():
+    if "student_id" not in session:
+        return redirect("/login")
+
+    complaint_id = request.form["complaint_id"]
+    message = request.form["message"]
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("INSERT INTO messages (complaint_id, sender, message) VALUES (?,?,?)",
+              (complaint_id, "student", message))
+    conn.commit()
+    conn.close()
+
+    return redirect("/dashboard")
 
 # -------- Admin Login --------
 
@@ -114,7 +150,6 @@ def admin_login():
         username = request.form["username"]
         password = request.form["password"]
 
-        # Hardcoded admin
         if username == "admin" and password == "admin123":
             session["admin"] = True
             return redirect("/admin_dashboard")
@@ -145,9 +180,37 @@ def admin_dashboard():
                  JOIN students ON complaints.student_id = students.id""")
     all_complaints = c.fetchall()
 
+    # Fetch messages
+    messages = {}
+    for comp in all_complaints:
+        c.execute("SELECT sender, message FROM messages WHERE complaint_id=?",
+                  (comp[0],))
+        messages[comp[0]] = c.fetchall()
+
     conn.close()
 
-    return render_template("admin_dashboard.html", complaints=all_complaints)
+    return render_template("admin_dashboard.html",
+                           complaints=all_complaints,
+                           messages=messages)
+
+# -------- Admin Reply --------
+
+@app.route("/reply", methods=["POST"])
+def reply():
+    if "admin" not in session:
+        return redirect("/admin")
+
+    complaint_id = request.form["complaint_id"]
+    message = request.form["message"]
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("INSERT INTO messages (complaint_id, sender, message) VALUES (?,?,?)",
+              (complaint_id, "admin", message))
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin_dashboard")
 
 # -------- Logout --------
 
