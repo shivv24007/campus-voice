@@ -11,6 +11,7 @@
 </header>
 
 <section>
+
     <h2>Submit Complaint</h2>
 
     <form method="post">
@@ -20,23 +21,39 @@
 
     <h2>Your Complaints</h2>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Complaint</th>
-            <th>Status</th>
-        </tr>
-        {% for c in complaints %}
-        <tr>
-            <td>{{ c[0] }}</td>
-            <td>{{ c[2] }}</td>
-            <td>{{ c[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    {% for c in complaints %}
+        <div style="border:1px solid #ccc; padding:15px; margin-bottom:20px; border-radius:10px;">
+
+            <p><strong>Complaint ID:</strong> {{ c[0] }}</p>
+            <p><strong>Complaint:</strong> {{ c[2] }}</p>
+            <p><strong>Status:</strong> {{ c[3] }}</p>
+
+            <hr>
+
+            <h4>Conversation:</h4>
+
+            {% for msg in messages[c[0]] %}
+                <p>
+                    <strong>{{ msg[0] }}:</strong> {{ msg[1] }}
+                </p>
+            {% endfor %}
+
+            {% if c[3] != "Resolved" %}
+                <form method="post" action="/student_reply">
+                    <input type="hidden" name="complaint_id" value="{{ c[0] }}">
+                    <textarea name="message" placeholder="Reply to admin..." required></textarea>
+                    <input type="submit" value="Send Reply">
+                </form>
+            {% else %}
+                <p><b>Chat Closed (Complaint Resolved)</b></p>
+            {% endif %}
+
+        </div>
+    {% endfor %}
 
     <br>
     <a href="/logout"><button>Logout</button></a>
+
 </section>
 
 <footer>
